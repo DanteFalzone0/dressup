@@ -12,19 +12,27 @@ class Pixel:
 class PixelLayer:
   def __init__(self, width, height):
     self.pixels = []
-    for x in range(width):
+    self.width = width
+    self.height = height
+    for x in range(self.width):
       self.pixels.append([])
-      for y in range(width):
+      for y in range(self.height):
         self.pixels[x].append(Pixel(x, y, (0, 0, 0, 0)))
 
   def set_pixel(self, x, y, color):
     self.pixels[x][y].color = color
 
-  def render(self, screen):
+  # necessary to make the alpha channel work properly
+  def _draw_rect_alpha(self, surface, color, rect):
+    shape_surf = pygame.Surface(pygame.Rect(rect).size, pygame.SRCALPHA)
+    pygame.draw.rect(shape_surf, color, shape_surf.get_rect())
+    surface.blit(shape_surf, rect)
+
+  def render(self, surface):
     for col in self.pixels:
       for pixel in col:
-        pygame.draw.rect(
-          screen,
+        self._draw_rect_alpha(
+          surface,
           pixel.color,
           (
             pixel.x * PIXEL_SIZE,
@@ -40,8 +48,10 @@ class Window:
     width: int,
     height: int
   ):
+    self.width = width
+    self.height = height
     pygame.init()
-    self.screen = pygame.display.set_mode(
+    self.surface = pygame.display.set_mode(
       [width*PIXEL_SIZE, height*PIXEL_SIZE]
     )
     self.layers = [PixelLayer(width, height)]
@@ -53,11 +63,13 @@ class Window:
   ):
     self.running = True
     while self.running:
-      for event in pygame.event.get():
+      event_queue = pygame.event.get()
+      for event in event_queue:
         if event.type == pygame.QUIT:
           self.running = False
-      update(self, data)
+      self.surface.fill((0, 0, 0))
+      update(self, data, event_queue)
       for layer in self.layers:
-        layer.render(self.screen)
+        layer.render(self.surface)
       pygame.display.flip()
     pygame.quit()

@@ -1,10 +1,11 @@
 import pygame
-from window import Window
+from window import *
 
 if __name__ == "__main__":
   window = Window(150, 150)
+  window.layers.append(PixelLayer(window.width, window.height))
 
-  def update(window, data):
+  def update(window, data, event_queue):
     # midpoint circle algorithm
     # copied from here https://rosettacode.org/wiki/Bitmap/Midpoint_circle_algorithm#Python
     radius = 50
@@ -37,5 +38,14 @@ if __name__ == "__main__":
       window.layers[0].set_pixel(x0 - y, y0 + x, color)
       window.layers[0].set_pixel(x0 + y, y0 - x, color)
       window.layers[0].set_pixel(x0 - y, y0 - x, color)
+
+    # let the user draw
+    if pygame.mouse.get_pressed()[0]:
+      mouse_pos = pygame.mouse.get_pos()
+      window.layers[1].set_pixel(
+        mouse_pos[0]//PIXEL_SIZE,
+        mouse_pos[1]//PIXEL_SIZE,
+        (20, 20, 255, 100)
+      )
 
   window.mainloop(update, {})
