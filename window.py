@@ -1,12 +1,29 @@
 import pygame
+import json
 
-PIXEL_SIZE = 3
+PIXEL_SIZE = 4
 
 class Pixel:
   def __init__(self, x, y, color):
     self.x = x
     self.y = y
     self.color = color
+
+
+class Image:
+  def __init__(self, filepath: str):
+    self.data = json.loads(open(filepath).read())
+
+  def __getitem__(self, key):
+    return self.data[key]
+
+  def __setitem__(self, key, value):
+    self.data[key] = value
+
+  def save(self, filepath: str):
+    of = open(filepath, "w+")
+    of.write(json.dumps(self.data, indent=2))
+    of.close()
 
 
 class PixelLayer:
@@ -40,6 +57,26 @@ class PixelLayer:
             PIXEL_SIZE, PIXEL_SIZE
           )
         )
+
+  def add_image(
+    self,
+    image: Image,
+    xpos: int = 0,
+    ypos: int = 0,
+    bg = (0, 0, 0, 0) # tuple representing background color
+  ):
+    for obj in image["pixels"]:
+      obj_color = obj["color"]
+      color = (
+        bg[0] if obj_color["r"] == "BG" else obj_color["r"],
+        bg[1] if obj_color["g"] == "BG" else obj_color["g"],
+        bg[2] if obj_color["b"] == "BG" else obj_color["b"],
+        bg[3] if obj_color["alpha"] == "BG" else obj_color["alpha"]
+      )
+      try:
+        self.set_pixel(obj["x"]+xpos, obj["y"]+ypos, color)
+      except IndexError:
+        pass
 
 
 class Window:
