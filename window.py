@@ -58,7 +58,7 @@ class Window:
 
   def mainloop(
     self,
-    update, # must be a callable object taking a Window and a dict
+    update, # must be a callable object taking a Window, a dict, and an iterable
     data: dict
   ):
     self.running = True
