@@ -11,8 +11,11 @@ class Pixel:
 
 
 class Image:
-  def __init__(self, filepath: str):
-    self.data = json.loads(open(filepath).read())
+  def __init__(self, filepath: str = None):
+    if filepath is not None:
+      self.data = json.loads(open(filepath).read())
+    else:
+      self.data = {"pixels": []}
 
   def __getitem__(self, key):
     return self.data[key]
@@ -24,6 +27,22 @@ class Image:
     of = open(filepath, "w+")
     of.write(json.dumps(self.data, indent=2))
     of.close()
+
+  def set_pixel(self, x, y, color):
+    for obj in self.data["pixels"]:
+      if (obj["x"], obj["y"]) == (x, y):
+        del obj
+
+    self.data["pixels"].append({
+      "x": x,
+      "y": y,
+      "color": {
+        "r": color[0],
+        "g": color[1],
+        "b": color[2],
+        "alpha": color[3]
+      }
+    })
 
 
 class PixelLayer:
@@ -100,13 +119,13 @@ class Window:
   ):
     self.running = True
     while self.running:
+      self.surface.fill((0, 0, 0))
       event_queue = pygame.event.get()
       for event in event_queue:
         if event.type == pygame.QUIT:
           self.running = False
-      self.surface.fill((0, 0, 0))
       update(self, data, event_queue)
       for layer in self.layers:
         layer.render(self.surface)
-      pygame.display.flip()
+      pygame.display.update()
     pygame.quit()

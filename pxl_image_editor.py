@@ -1,32 +1,36 @@
 import pygame
+from pygame.locals import *
+import sys
 from window import *
 
 FONT_SIZE = 16
 
-if __name__ == "__main__":
+def main():
+  output_filepath = sys.argv[1]
   window = Window(150, 150)
   window.layers.append(PixelLayer(window.width, window.height))
-  font = pygame.font.Font("hackerman.ttf", FONT_SIZE)
-  label_text = "*.pxl image editor - ctrl+S to save"
-  label = font.render(
-    label_text,
-    True,
-    (255, 255, 255, 255),
-    (0, 0, 0, 0)
-  )
-  label_rect = label.get_rect()
-  label_rect.center = (150, 10)
+  title_text = "*.pxl image editor - press ctrl+S to save"
+  pygame.display.set_caption(title_text)
+  output_image = Image(output_filepath)
 
   def update(window, data, event_queue):
+    window.layers[0].add_image(output_image)
+
     # let the user draw
     if pygame.mouse.get_pressed()[0]:
-      mouse_pos = pygame.mouse.get_pos()
-      window.layers[1].set_pixel(
-        mouse_pos[0]//PIXEL_SIZE,
-        mouse_pos[1]//PIXEL_SIZE,
+      mouse_x, mouse_y = pygame.mouse.get_pos()
+      output_image.set_pixel(
+        mouse_x//PIXEL_SIZE,
+        mouse_y//PIXEL_SIZE,
         (20, 20, 255, 100)
       )
 
-    window.surface.blit(label, label_rect)
+    keys = pygame.key.get_pressed()
+    if keys[K_s] and (keys[K_RCTRL] or keys[K_LCTRL]):
+      pygame.display.set_caption("Saving...")
+      output_image.save(output_filepath)
+      pygame.display.set_caption(title_text)
 
   window.mainloop(update, {})
+
+main()
